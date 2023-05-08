@@ -31,3 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
+
+/dispatcher/src/main/resources/application.properties
