@@ -3,6 +3,7 @@ package com.matsko.service.impl;
 import com.matsko.dao.AppUserDAO;
 import com.matsko.dao.RawDataDAO;
 import com.matsko.entity.AppDocument;
+import com.matsko.entity.AppPhoto;
 import com.matsko.entity.AppUser;
 import com.matsko.entity.RawData;
 import com.matsko.exception.UploadFileException;
@@ -27,7 +28,6 @@ public class MainServiceImpl implements MainService {
     private final ProducerService producerService;
     private final AppUserDAO appUserDAO;
     private final FileService fileService;
-
 
     public MainServiceImpl(RawDataDAO rawDataDAO, ProducerService producerService, AppUserDAO appUserDAO, FileService fileService) {
         this.rawDataDAO = rawDataDAO;
@@ -89,10 +89,18 @@ public class MainServiceImpl implements MainService {
         if (isNotAllowToSendContent(chatId, appUser)) {
             return;
         }
-        //TODO добавить сохранение фотографии
-        var answer = "Фотография успешно загружена!" +
-                " Ссылка для скачивания: http://test.ru/get-photo/777";
-        sendAnswer(answer, chatId);
+
+        try {
+            AppPhoto photo = fileService.processPhoto(update.getMessage());
+            //TODO добавить генерацию ссылки для скачивания фото
+            var answer = "Фотография успешно загружена!" +
+                    " Ссылка для скачивания: http://test.ru/get-photo/777";
+            sendAnswer(answer, chatId);
+        } catch (UploadFileException e) {
+            log.info(String.valueOf(e));
+            String error = "К сожалению, загрузка файла не удалась. Повторите попытку позже.";
+            sendAnswer(error, chatId);
+        }
     }
 
     private boolean isNotAllowToSendContent(Long chatId, AppUser appUser) {
