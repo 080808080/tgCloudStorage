@@ -69,6 +69,12 @@
             <artifactId>hibernate-types-52</artifactId>
             <version>2.2.2</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.matsko</groupId>
+            <artifactId>common-utils</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 </project>
