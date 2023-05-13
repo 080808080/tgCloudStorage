@@ -16,25 +16,11 @@ import javax.annotation.PostConstruct;
 @PropertySource("application.properties")
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
-
-    static final String ERROR_TEXT = "Error occurred: ";
-
-    private final UpdateController updateController;
-
     @Value("${bot.name}")
     private String botName;
     @Value("${bot.token}")
     private String botToken;
-
-    @Override
-    public String getBotToken() {
-        return botToken;
-    }
-
-    @Override
-    public String getBotUsername() {
-        return botName;
-    }
+    private final UpdateController updateController;
 
     public TelegramBot(UpdateController updateController) {
         this.updateController = updateController;
@@ -46,24 +32,26 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     @Override
-    public void onUpdateReceived(Update update) {
-        updateController.processUpdate(update);
-
-//        var incomingMessage = update.getMessage();
-//        log.info(incomingMessage.getText());
-//
-//        var response = new SendMessage();
-//        response.setChatId(incomingMessage.getChatId().toString());
-//        response.setText("Hello");
-//        answerMessage(response);
+    public String getBotUsername() {
+        return botName;
     }
 
-    public void answerMessage(SendMessage message) {
+    @Override
+    public String getBotToken() {
+        return botToken;
+    }
+
+    @Override
+    public void onUpdateReceived(Update update) {
+        updateController.processUpdate(update);
+    }
+
+    public void sendAnswerMessage(SendMessage message) {
         if (message != null) {
             try {
                 execute(message);
             } catch (TelegramApiException e) {
-                log.error(ERROR_TEXT + e.getMessage());
+                log.error(e.getMessage());
             }
         }
     }

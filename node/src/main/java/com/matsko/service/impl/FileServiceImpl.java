@@ -7,6 +7,7 @@ import com.matsko.entity.AppDocument;
 import com.matsko.entity.AppPhoto;
 import com.matsko.entity.BinaryContent;
 import com.matsko.exception.UploadFileException;
+import com.matsko.service.FileService;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,7 +45,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public AppDocument processDoc(Message telegramMessage) {
         Document telegramDoc = telegramMessage.getDocument();
-        String fileId = telegramMessage.getDocument().getFileId();
+        String fileId = telegramDoc.getFileId();
         ResponseEntity<String> response = getFilePath(fileId);
         if (response.getStatusCode() == HttpStatus.OK) {
             BinaryContent persistentBinaryContent = getPersistentBinaryContent(response);
@@ -57,7 +58,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public AppPhoto processPhoto(Message telegramMessage) {
-        //TODO подумать над обработкой нескольких фотографий
+        //TODO пока что обрабатываем только одно фото в сообщении
         PhotoSize telegramPhoto = telegramMessage.getPhoto().get(0);
         String fileId = telegramPhoto.getFileId();
         ResponseEntity<String> response = getFilePath(fileId);
@@ -71,8 +72,7 @@ public class FileServiceImpl implements FileService {
     }
 
     private BinaryContent getPersistentBinaryContent(ResponseEntity<String> response) {
-        JSONObject jsonObject = new JSONObject(response.getBody());
-        String filePath = getFilePath(jsonObject);
+        String filePath = getFilePath(response);
         byte[] fileInByte = downloadFile(filePath);
         BinaryContent transientBinaryContent = BinaryContent.builder()
                 .fileAsArrayOfBytes(fileInByte)
@@ -80,7 +80,8 @@ public class FileServiceImpl implements FileService {
         return binaryContentDAO.save(transientBinaryContent);
     }
 
-    private String getFilePath(JSONObject jsonObject) {
+    private String getFilePath(ResponseEntity<String> response) {
+        JSONObject jsonObject = new JSONObject(response.getBody());
         return String.valueOf(jsonObject
                 .getJSONObject("result")
                 .getString("file_path"));

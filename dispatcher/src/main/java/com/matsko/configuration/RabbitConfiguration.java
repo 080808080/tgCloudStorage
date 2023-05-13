@@ -10,7 +10,6 @@ import static com.matsko.model.RabbitQueue.*;
 
 @Configuration
 public class RabbitConfiguration {
-
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();

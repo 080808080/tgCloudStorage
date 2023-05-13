@@ -7,6 +7,7 @@ import com.matsko.entity.AppPhoto;
 import com.matsko.entity.AppUser;
 import com.matsko.entity.RawData;
 import com.matsko.exception.UploadFileException;
+import com.matsko.service.FileService;
 import com.matsko.service.MainService;
 import com.matsko.service.ProducerService;
 import com.matsko.service.enums.ServiceCommand;
@@ -23,13 +24,15 @@ import static com.matsko.service.enums.ServiceCommand.*;
 @Slf4j
 @Service
 public class MainServiceImpl implements MainService {
-
     private final RawDataDAO rawDataDAO;
     private final ProducerService producerService;
     private final AppUserDAO appUserDAO;
     private final FileService fileService;
 
-    public MainServiceImpl(RawDataDAO rawDataDAO, ProducerService producerService, AppUserDAO appUserDAO, FileService fileService) {
+    public MainServiceImpl(RawDataDAO rawDataDAO,
+                           ProducerService producerService,
+                           AppUserDAO appUserDAO,
+                           FileService fileService) {
         this.rawDataDAO = rawDataDAO;
         this.producerService = producerService;
         this.appUserDAO = appUserDAO;
@@ -50,11 +53,12 @@ public class MainServiceImpl implements MainService {
         } else if (BASIC_STATE.equals(userState)) {
             output = processServiceCommand(appUser, text);
         } else if (WAIT_FOR_EMAIL_STATE.equals(userState)) {
-            //TODO добавить обработку email
+            //TODO добавить обработку емейла
         } else {
-            log.info("Unknown user state: " + userState);
+            log.error("Unknown user state: " + userState);
             output = "Неизвестная ошибка! Введите /cancel и попробуйте снова!";
         }
+
         var chatId = update.getMessage().getChatId();
         sendAnswer(output, chatId);
     }
@@ -75,7 +79,7 @@ public class MainServiceImpl implements MainService {
                     + "Ссылка для скачивания: http://test.ru/get-doc/777";
             sendAnswer(answer, chatId);
         } catch (UploadFileException e) {
-            log.info(String.valueOf(e));
+            log.error(e.getMessage());
             String error = "К сожалению, загрузка файла не удалась. Повторите попытку позже.";
             sendAnswer(error, chatId);
         }
@@ -93,24 +97,25 @@ public class MainServiceImpl implements MainService {
         try {
             AppPhoto photo = fileService.processPhoto(update.getMessage());
             //TODO добавить генерацию ссылки для скачивания фото
-            var answer = "Фотография успешно загружена!" +
-                    " Ссылка для скачивания: http://test.ru/get-photo/777";
+            var answer = "Фото успешно загружено! "
+                    + "Ссылка для скачивания: http://test.ru/get-photo/777";
             sendAnswer(answer, chatId);
         } catch (UploadFileException e) {
-            log.info(String.valueOf(e));
-            String error = "К сожалению, загрузка файла не удалась. Повторите попытку позже.";
+            log.error(e.getMessage());
+            String error = "К сожалению, загрузка фото не удалась. Повторите попытку позже.";
             sendAnswer(error, chatId);
         }
     }
 
     private boolean isNotAllowToSendContent(Long chatId, AppUser appUser) {
         var userState = appUser.getState();
-        if (!appUser.isActive()) {
-            var error = "Зарегистрируйтесь или активируйте свою учётную запись";
+        if (!appUser.getIsActive()) {
+            var error = "Зарегистрируйтесь или активируйте "
+                    + "свою учетную запись для загрузки контента.";
             sendAnswer(error, chatId);
             return true;
         } else if (!BASIC_STATE.equals(userState)) {
-            var error = "Отмените текущую команду с помощью команды /cancel";
+            var error = "Отмените текущую команду с помощью /cancel для отправки файлов.";
             sendAnswer(error, chatId);
             return true;
         }
@@ -128,14 +133,13 @@ public class MainServiceImpl implements MainService {
         var serviceCommand = ServiceCommand.fromValue(cmd);
         if (REGISTRATION.equals(serviceCommand)) {
             //TODO добавить регистрацию
-            return "Временно недоступно";
+            return "Временно недоступно.";
         } else if (HELP.equals(serviceCommand)) {
             return help();
         } else if (START.equals(serviceCommand)) {
-            return "Привет! Чтобы ознакомиться со списком доступных команд введите /help";
+            return "Приветствую! Чтобы посмотреть список доступных команд введите /help";
         } else {
-            return "Неизвестная команда!" +
-                    " Чтобы ознакомиться со списком доступных команд введите /help";
+            return "Неизвестная команда! Чтобы посмотреть список доступных команд введите /help";
         }
     }
 
@@ -144,7 +148,6 @@ public class MainServiceImpl implements MainService {
                 + "/cancel - отмена выполнения текущей команды;\n"
                 + "/registration - регистрация пользователя.";
     }
-
 
     private String cancelProcess(AppUser appUser) {
         appUser.setState(BASIC_STATE);
@@ -158,7 +161,7 @@ public class MainServiceImpl implements MainService {
         if (persistentAppUser == null) {
             AppUser transientAppUser = AppUser.builder()
                     .telegramUserId(telegramUser.getId())
-                    .userName(telegramUser.getUserName())
+                    .username(telegramUser.getUserName())
                     .firstName(telegramUser.getFirstName())
                     .lastName(telegramUser.getLastName())
                     //TODO изменить значение по умолчанию после добавления регистрации

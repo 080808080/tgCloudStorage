@@ -16,13 +16,13 @@ public class UpdateController {
     private final MessageUtils messageUtils;
     private final UpdateProducer updateProducer;
 
-    public void registerBot(TelegramBot telegramBot) {
-        this.telegramBot = telegramBot;
-    }
-
     public UpdateController(MessageUtils messageUtils, UpdateProducer updateProducer) {
         this.messageUtils = messageUtils;
         this.updateProducer = updateProducer;
+    }
+
+    public void registerBot(TelegramBot telegramBot) {
+        this.telegramBot = telegramBot;
     }
 
     public void processUpdate(Update update) {
@@ -32,13 +32,13 @@ public class UpdateController {
         }
 
         if (update.hasMessage()) {
-            distributeMessageByType(update);
+            distributeMessagesByType(update);
         } else {
-            log.error("Received unsupported message type " + update);
+            log.error("Unsupported message type is received: " + update);
         }
     }
 
-    private void distributeMessageByType(Update update) {
+    private void distributeMessagesByType(Update update) {
         var message = update.getMessage();
         if (message.hasText()) {
             processTextMessage(update);
@@ -47,17 +47,24 @@ public class UpdateController {
         } else if (message.hasPhoto()) {
             processPhotoMessage(update);
         } else {
-            setUnsupportedMessageType(update);
+            setUnsupportedMessageTypeView(update);
         }
     }
 
-    private void processTextMessage(Update update) {
-        updateProducer.produce(TEXT_MESSAGE_UPDATE, update);
+    private void setUnsupportedMessageTypeView(Update update) {
+        var sendMessage = messageUtils.generateSendMessageWithText(update,
+                "Неподдерживаемый тип сообщения!");
+        setView(sendMessage);
     }
 
-    private void processDocMessage(Update update) {
-        updateProducer.produce(DOC_MESSAGE_UPDATE, update);
-        setFileIsReceivedView(update);
+    private void setFileIsReceivedView(Update update) {
+        var sendMessage = messageUtils.generateSendMessageWithText(update,
+                "Файл получен! Обрабатывается...");
+        setView(sendMessage);
+    }
+
+    public void setView(SendMessage sendMessage) {
+        telegramBot.sendAnswerMessage(sendMessage);
     }
 
     private void processPhotoMessage(Update update) {
@@ -65,19 +72,12 @@ public class UpdateController {
         setFileIsReceivedView(update);
     }
 
-    private void setUnsupportedMessageType(Update update) {
-        var sendMessage = messageUtils.generateSendMessage(update,
-                "Этот тип сообщения не поддерживается");
-        setView(sendMessage);
+    private void processDocMessage(Update update) {
+        updateProducer.produce(DOC_MESSAGE_UPDATE, update);
+        setFileIsReceivedView(update);
     }
 
-    private void setFileIsReceivedView(Update update) {
-        var sendMessage = messageUtils.generateSendMessage(update,
-                "Файл обрабатывается...");
-        setView(sendMessage);
-    }
-
-    public void setView(SendMessage sendMessage) {
-        telegramBot.answerMessage(sendMessage);
+    private void processTextMessage(Update update) {
+        updateProducer.produce(TEXT_MESSAGE_UPDATE, update);
     }
 }

@@ -1,10 +1,10 @@
-package com.matsko.service.impl;
+package com.matsko.service;
 
 import com.matsko.entity.AppDocument;
 import com.matsko.entity.AppPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 public interface FileService {
-    AppDocument processDoc (Message telegramMessage);
-    AppPhoto processPhoto (Message telegramMessage);
+    AppDocument processDoc(Message telegramMessage);
+    AppPhoto processPhoto(Message telegramMessage);
 }

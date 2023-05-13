@@ -16,13 +16,11 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "raw_data")
-@TypeDef(name="jsonb", typeClass = JsonBinaryType.class)
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class RawData {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private Update event;

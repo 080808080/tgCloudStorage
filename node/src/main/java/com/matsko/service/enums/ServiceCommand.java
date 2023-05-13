@@ -7,7 +7,6 @@ public enum ServiceCommand {
     START("/start");
     private final String value;
 
-
     ServiceCommand(String value) {
         this.value = value;
     }

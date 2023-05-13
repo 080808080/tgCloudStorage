@@ -8,10 +8,10 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Service
 @Slf4j
-public class UpdateProduceImpl implements UpdateProducer {
-        private final RabbitTemplate rabbitTemplate;
+public class UpdateProducerImpl implements UpdateProducer {
+    private final RabbitTemplate rabbitTemplate;
 
-    public UpdateProduceImpl(RabbitTemplate rabbitTemplate) {
+    public UpdateProducerImpl(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
 
