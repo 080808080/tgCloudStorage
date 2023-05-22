@@ -80,7 +80,7 @@ public class MainServiceImpl implements MainService {
             AppDocument doc = fileService.processDoc(update.getMessage());
             String link = fileService.generationLink(doc.getId(), LinkType.GET_DOC);
             var answer = "Документ успешно загружен! "
-                    + "Ссылка для скачивания: " + link;
+                    + "Ссылка для скачивания: \n" + link;
             sendAnswer(answer, chatId);
         } catch (UploadFileException e) {
             log.error(e.getMessage());
@@ -102,7 +102,7 @@ public class MainServiceImpl implements MainService {
             AppPhoto photo = fileService.processPhoto(update.getMessage());
             String link = fileService.generationLink(photo.getId(), LinkType.GET_PHOTO);
             var answer = "Фото успешно загружено! "
-                    + "Ссылка для скачивания: " + link;
+                    + "Ссылка для скачивания: \n" + link;
             sendAnswer(answer, chatId);
         } catch (UploadFileException e) {
             log.error(e.getMessage());
@@ -115,7 +115,8 @@ public class MainServiceImpl implements MainService {
         var userState = appUser.getState();
         if (!appUser.getIsActive()) {
             var error = "Зарегистрируйтесь или активируйте "
-                    + "свою учетную запись для загрузки контента.";
+                    + "свою учетную запись для загрузки контента.\n" +
+                    "/registration";
             sendAnswer(error, chatId);
             return true;
         } else if (!BASIC_STATE.equals(userState)) {
