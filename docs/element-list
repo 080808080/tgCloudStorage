@@ -1,0 +1,13 @@
+com.matsko
+com.matsko.configuration
+com.matsko.controller
+com.matsko.dao
+com.matsko.dto
+com.matsko.entity
+com.matsko.entity.enums
+com.matsko.exception
+com.matsko.model
+com.matsko.service
+com.matsko.service.enums
+com.matsko.service.impl
+com.matsko.utils
