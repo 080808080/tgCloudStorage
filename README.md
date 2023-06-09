@@ -7,7 +7,7 @@ And also for study and implement of microservice architecture and Telegram capab
 ## Application algorithm
 ### 1. Running the bot
 - The bot is started with the command **/start**
-- Open menu of available commands - **/help**
+- Open menu of available commands **/help**
 ### 2. Registration
 - Registration begins with the command **/registration**
 - The user enters their email
