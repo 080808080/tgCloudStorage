@@ -12,19 +12,37 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * Class to process HTTP-requests from the user.
+ */
 @Slf4j
 @RequestMapping("/file")
 @RestController
 public class FileController {
+
+    /**
+     * Field that accepts {@link FileService}.
+     */
     private final FileService fileService;
 
+    /**
+     * Constructor.
+     *
+     * @param fileService interface for getting a file.
+     */
     public FileController(FileService fileService) {
         this.fileService = fileService;
     }
 
+    /**
+     * Method for getting the document.
+     *
+     * @param id document identifier.
+     * @param response response to the client.
+     */
     @RequestMapping(method = RequestMethod.GET, value = "/get-doc")
     public void getDoc(@RequestParam("id") String id, HttpServletResponse response) {
-        //TODO для формирования badRequest добавить ControllerAdvice
+
         var doc = fileService.getDocument(id);
         if (doc == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -45,9 +63,15 @@ public class FileController {
         }
     }
 
+    /**
+     * Method for getting the photo.
+     *
+     * @param id photo identifier.
+     * @param response response to the client.
+     */
     @RequestMapping(method = RequestMethod.GET, value = "/get-photo")
     public void getPhoto(@RequestParam("id") String id, HttpServletResponse response) {
-        //TODO для формирования badRequest добавить ControllerAdvice
+
         var photo = fileService.getPhoto(id);
         if (photo == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

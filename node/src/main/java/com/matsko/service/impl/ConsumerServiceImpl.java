@@ -9,11 +9,23 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import static com.matsko.model.RabbitQueue.*;
 
+/**
+ * Class that implements {@link ConsumerService}.
+ */
 @Service
 @Slf4j
 public class ConsumerServiceImpl implements ConsumerService {
+
+    /**
+     * Field that accepts {@link MainService}.
+     */
     private final MainService mainService;
 
+    /**
+     * Constructor.
+     *
+     * @param mainService service through which all incoming messages are processed.
+     */
     public ConsumerServiceImpl(MainService mainService) {
         this.mainService = mainService;
     }

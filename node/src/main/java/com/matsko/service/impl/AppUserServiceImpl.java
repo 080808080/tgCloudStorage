@@ -7,6 +7,7 @@ import com.matsko.service.AppUserService;
 import com.matsko.utils.CryptoTool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -17,19 +18,40 @@ import javax.mail.internet.InternetAddress;
 import static com.matsko.entity.enums.UserState.BASIC_STATE;
 import static com.matsko.entity.enums.UserState.WAIT_FOR_EMAIL_STATE;
 
+/**
+ * Class that implements {@link AppUserService}.
+ */
 @Slf4j
 @Service
 public class AppUserServiceImpl implements AppUserService {
+
+    /**
+     * Field that accepts {@link AppUserDAO}.
+     */
     private final AppUserDAO appUserDAO;
+
+    /**
+     * Field that accepts {@link CryptoTool}.
+     */
     private final CryptoTool cryptoTool;
+
+    /**
+     * Field that accepts address to which requests are sent to the mailing service
+     * to send a letter for user activation.
+     */
     @Value("${service.mail.uri}")
     private String mailServiceUri;
 
+    /**
+     * Constructor.
+     *
+     * @param appUserDAO data access object interface that inherits from an interface {@link JpaRepository}.
+     * @param cryptoTool encrypts the generated file reference.
+     */
     public AppUserServiceImpl(AppUserDAO appUserDAO, CryptoTool cryptoTool) {
         this.appUserDAO = appUserDAO;
         this.cryptoTool = cryptoTool;
     }
-
 
     @Override
     public String registerUser(AppUser appUser) {
@@ -76,6 +98,13 @@ public class AppUserServiceImpl implements AppUserService {
         }
     }
 
+    /**
+     * Method that generates and sends a POST request to the mail service.
+     *
+     * @param cryptoUserId encrypted user id.
+     * @param email user email.
+     * @return ready request.
+     */
     private ResponseEntity<String> sendRequestToMailService(String cryptoUserId, String email) {
         var restTemplate = new RestTemplate();
         var headers = new HttpHeaders();

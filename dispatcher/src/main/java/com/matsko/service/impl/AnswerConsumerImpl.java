@@ -8,10 +8,22 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import static com.matsko.model.RabbitQueue.ANSWER_MESSAGE;
 
+/**
+ * Class that implements {@link AnswerConsumer}.
+ */
 @Service
 public class AnswerConsumerImpl implements AnswerConsumer {
+
+    /**
+     * Field that accepts {@link UpdateController}.
+     */
     private final UpdateController updateController;
 
+    /**
+     * Constructor.
+     *
+     * @param updateController controller that distributes incoming messages from the user.
+     */
     public AnswerConsumerImpl(UpdateController updateController) {
         this.updateController = updateController;
     }

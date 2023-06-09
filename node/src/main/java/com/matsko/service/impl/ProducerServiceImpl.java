@@ -7,10 +7,22 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import static com.matsko.model.RabbitQueue.ANSWER_MESSAGE;
 
+/**
+ * Class that implements {@link ProducerService}.
+ */
 @Service
 public class ProducerServiceImpl implements ProducerService {
+
+    /**
+     * Field that accepts {@link RabbitTemplate}.
+     */
     private final RabbitTemplate rabbitTemplate;
 
+    /**
+     * Constructor.
+     *
+     * @param rabbitTemplate bean to send messages (producer).
+     */
     public ProducerServiceImpl(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }

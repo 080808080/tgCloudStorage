@@ -13,6 +13,7 @@ import com.matsko.utils.CryptoTool;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -25,23 +26,65 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+/**
+ * Class that implements {@link FileService}.
+ */
 @Slf4j
 @Service
 public class FileServiceImpl implements FileService {
+
+    /**
+     * Field that accepts the key to Telegram Bot.
+     */
     @Value("${token}")
     private String token;
+
+    /**
+     * Field that accepts address to which the file information from Telegram is requested.
+     */
     @Value("${service.file_info.uri}")
     private String fileInfoUri;
+
+    /**
+     * Field that accepts address where you can contact and download content.
+     */
     @Value("${service.file_storage.uri}")
     private String fileStorageUri;
+
+    /**
+     * Field that receives the host address.
+     */
     @Value("${link.address}")
     private String LinkAddress;
+
+    /**
+     * Field that accepts {@link AppDocumentDAO}.
+     */
     private final AppDocumentDAO appDocumentDAO;
+
+    /**
+     * Field that accepts {@link AppPhotoDAO}.
+     */
     private final AppPhotoDAO appPhotoDAO;
+
+    /**
+     * Field that accepts {@link BinaryContentDAO}.
+     */
     private final BinaryContentDAO binaryContentDAO;
+
+    /**
+     * Field that accepts {@link CryptoTool}.
+     */
     private final CryptoTool cryptoTool;
 
-
+    /**
+     * Constructor.
+     *
+     * @param appDocumentDAO inherits from an interface {@link JpaRepository} for document processing.
+     * @param appPhotoDAO inherits from an interface {@link JpaRepository} for photo processing.
+     * @param binaryContentDAO inherits from an interface {@link JpaRepository} for {@link BinaryContent} processing.
+     * @param cryptoTool encrypts the generated file reference.
+     */
     public FileServiceImpl(AppDocumentDAO appDocumentDAO, AppPhotoDAO appPhotoDAO, BinaryContentDAO binaryContentDAO, CryptoTool cryptoTool) {
         this.appDocumentDAO = appDocumentDAO;
         this.appPhotoDAO = appPhotoDAO;
@@ -79,6 +122,12 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    /**
+     * Retrieving an object stored in a database and having a primary key.
+     *
+     * @param response request response.
+     * @return save the object in the database.
+     */
     private BinaryContent getPersistentBinaryContent(ResponseEntity<String> response) {
         String filePath = getFilePath(response);
         byte[] fileInByte = downloadFile(filePath);
@@ -88,6 +137,12 @@ public class FileServiceImpl implements FileService {
         return binaryContentDAO.save(transientBinaryContent);
     }
 
+    /**
+     * Getting the file path from the request response.
+     *
+     * @param response request response.
+     * @return file path.
+     */
     private String getFilePath(ResponseEntity<String> response) {
         JSONObject jsonObject = new JSONObject(response.getBody());
         return String.valueOf(jsonObject
@@ -95,6 +150,14 @@ public class FileServiceImpl implements FileService {
                 .getString("file_path"));
     }
 
+    /**
+     * This method takes values from the fields of a Telegram document object
+     * and enters them into our object.
+     *
+     * @param telegramDoc Telegram document object.
+     * @param persistentBinaryContent object containing the generated primary key.
+     * @return ready document object.
+     */
     private AppDocument buildTransientAppDoc(Document telegramDoc, BinaryContent persistentBinaryContent) {
         return AppDocument.builder()
                 .telegramFileId(telegramDoc.getFileId())
@@ -105,6 +168,14 @@ public class FileServiceImpl implements FileService {
                 .build();
     }
 
+    /**
+     * This method takes values from the fields of a Telegram photo object
+     * and enters them into our object.
+     *
+     * @param telegramPhoto Telegram photo object.
+     * @param persistentBinaryContent object containing the generated primary key.
+     * @return ready photo object.
+     */
     private AppPhoto buildTransientAppPhoto(PhotoSize telegramPhoto, BinaryContent persistentBinaryContent) {
         return AppPhoto.builder()
                 .telegramFileId(telegramPhoto.getFileId())
@@ -113,6 +184,12 @@ public class FileServiceImpl implements FileService {
                 .build();
     }
 
+    /**
+     * Method that allows to make an HTTP request.
+     *
+     * @param fileId Telegram file id.
+     * @return request URI, request parameters, return value type, request object and HTTP method.
+     */
     private ResponseEntity<String> getFilePath(String fileId) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
@@ -127,6 +204,12 @@ public class FileServiceImpl implements FileService {
         );
     }
 
+    /**
+     * The final URI on which the stream is started to download content is formed.
+     *
+     * @param filePath file path derived from the Telegram object.
+     * @return file, which is one big whole piece of.
+     */
     private byte[] downloadFile(String filePath) {
         String fullUri = fileStorageUri.replace("{token}", token)
                 .replace("{filePath}", filePath);
@@ -136,8 +219,6 @@ public class FileServiceImpl implements FileService {
         } catch (MalformedURLException e) {
             throw new UploadFileException(e);
         }
-
-        //TODO подумать над оптимизацией
         try (InputStream is = urlObj.openStream()) {
             return is.readAllBytes();
         } catch (IOException e) {

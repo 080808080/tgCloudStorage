@@ -6,11 +6,23 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+/**
+ * Class that implements {@link UpdateProducer}.
+ */
 @Service
 @Slf4j
 public class UpdateProducerImpl implements UpdateProducer {
+
+    /**
+     * Field that accepts {@link RabbitTemplate}.
+     */
     private final RabbitTemplate rabbitTemplate;
 
+    /**
+     * Constructor.
+     *
+     * @param rabbitTemplate bean to send messages (producer).
+     */
     public UpdateProducerImpl(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
